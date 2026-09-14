@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Kartika Lestari Jaya | OLED Mobile Spice Terminal</title>
+<!-- BEGIN: Google Fonts -->
+<link href="https://fonts.preconnect.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,600;1,6..72,400&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- END: Google Fonts -->
+<!-- Tailwind CSS CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- BEGIN: Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            oled: '#030504',
+            surface: {
+              base: '#070a08',
+              card: '#0c120f',
+              elevated: '#111915',
+              border: 'rgba(255, 255, 255, 0.08)',
+              borderAccent: 'rgba(16, 185, 129, 0.25)'
+            },
+            botanical: {
+              50: '#ecfdf5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              900: '#064e3b',
+              950: '#022c22'
+            },
+            amberGold: {
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706'
+            }
+          },
+          fontFamily: {
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+            sans: ['Plus Jakarta Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<!-- END: Tailwind Configuration -->
+<!-- BEGIN: Custom Styling -->
+<style data-purpose="base-terminal-styles">
+    body {
+      background-color: #030504;
+      color: #e5e7eb;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Subtle OLED glow lines */
+    .glow-emerald {
+      box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.18);
+    }
+    
+    .glow-amber {
+      box-shadow: 0 0 20px -3px rgba(245, 158, 11, 0.25);
+    }
+
+    /* Luxury Golden Ambient Glow Pulse */
+    @keyframes amber-glow {
+      0%, 100% {
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.35), 0 0 20px rgba(217, 119, 6, 0.2);
+      }
+      50% {
+        box-shadow: 0 0 18px rgba(245, 158, 11, 0.75), 0 0 30px rgba(245, 158, 11, 0.45);
+      }
+    }
+
+    /* Continuous Elegant Shimmer Light Sweep */
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-150%) skewX(-20deg);
+      }
+      40%, 100% {
+        transform: translateX(200%) skewX(-20deg);
+      }
+    }
+
+    .shimmer-btn {
+      position: relative;
+      overflow: hidden;
+      animation: amber-glow 3s ease-in-out infinite;
+    }
+
+    .shimmer-btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+      animation: shimmer 3.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Custom scrollbar for horizontal containers */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .slide-panel {
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .slide-panel.hidden {
+      display: none;
+    }
+  </style>
+<!-- END: Custom Styling -->
+</head>
+<body class="w-full max-w-[390px] mx-auto bg-oled min-h-screen relative overflow-x-hidden border-x border-surface-border flex flex-col justify-between">
+<!-- BEGIN: Sticky Header Area -->
+<div class="sticky top-0 z-40 bg-oled/95 backdrop-blur-md">
+<!-- BEGIN: Live Ticker Bar -->
+<aside class="w-full bg-[#050907] border-b border-white/5 py-1.5 px-3 flex items-center justify-between text-[10px] font-mono text-gray-400" data-purpose="market-ticker">
+<div class="flex items-center space-x-1.5 overflow-hidden">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-botanical-500 animate-pulse"></span>
+<span class="text-zinc-300 font-semibold truncate">FOB SPOT:</span>
+<span class="text-botanical-400">CLV $8,450/MT <span class="text-xs">▲</span> +1.6%</span>
+<span class="text-zinc-600">•</span>
+<span class="text-zinc-400 truncate">CSIA $4,200</span>
+</div>
+<div class="flex items-center space-x-1.5 pl-2 border-l border-white/10 shrink-0 font-medium text-amberGold-400">
+<span>WIB 08:32</span>
+<span class="text-zinc-500 text-[9px]">USD</span>
+</div>
+</aside>
+<!-- END: Live Ticker Bar -->
+<!-- BEGIN: MainHeader -->
+<header class="border-b border-surface-border px-3 py-2.5 flex items-center justify-between" data-purpose="mobile-navigation">
+<!-- Brand identity -->
+<div class="flex items-center space-x-2.5">
+<img alt="Kartika Lestari Jaya Seal" class="w-9 h-9 rounded-full object-cover border border-amberGold-500/30 p-0.5 bg-surface-elevated" src="https://lh3.googleusercontent.com/aida/AEtjO1X-3q0GF5kTrm_FH1pIlTzEg-wfJv6B_3wTMHLSSWGO377DpIfuSPCzN7c3sk0m7XJNIoNp8jkHuf_zjGu6JsfIIBV_Vg-oEY8fcNfYV_cew7UCTKcasue6UeEpEPY6iPBVe0ALIO4C87kZfAr1_pPJKRMlS91Zc6HwDKURv5yZ5tCTUKVj6V27jvw6PbXTeDp899H7GvAT1m8qdnOfMi5vpK3RhcpCr8t0eoGZDkc8WYyDzOnQ_sJgRaY"/>
+<div>
+<div class="flex items-center space-x-1">
+<h1 class="text-xs font-bold tracking-wider text-zinc-100 uppercase">KARTIKA LESTARI</h1>
+</div>
+<p class="text-[9px] font-mono text-botanical-400 tracking-tight flex items-center">
+<span class="inline-block w-1 h-1 rounded-full bg-botanical-500 mr-1"></span>
+          CROP 2024/2025 • TERROIR RESERVE
+        </p>
+</div>
+</div>
+<!-- Top CTA & Quick Drawer trigger -->
+<div class="flex items-center space-x-2">
+<button class="px-2.5 py-1.5 bg-gradient-to-r from-amberGold-500 to-amber-600 text-oled font-mono font-bold text-[10px] rounded tracking-wide shadow-sm flex items-center space-x-1 shimmer-btn" onclick="goToSlide(2)">
+<span class="relative z-10">CIF QUOTE</span>
+</button>
+<button aria-label="Open Navigation Menu" class="w-8 h-8 rounded bg-surface-card border border-white/10 flex items-center justify-center text-zinc-300 active:scale-95 transition" id="open-drawer-btn" onclick="document.getElementById('mobile-nav-drawer').classList.remove('hidden')">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</header>
+<!-- END: MainHeader -->
+<!-- Terminal Locale Switcher Bar -->
+<div class="bg-[#070c09] border-b border-surface-border px-3 py-1.5 flex items-center justify-between font-mono text-[9px]" data-purpose="terminal-language-bar">
+<div class="flex items-center space-x-1.5 text-zinc-400">
+<svg class="w-3 h-3 text-botanical-400 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="1.5"></circle><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
+<span class="text-[8.5px] uppercase tracking-wider text-zinc-500 font-medium">TERMINAL LOCALE</span>
+</div>
+<div aria-label="Language Selector" class="inline-flex items-center p-0.5 bg-oled rounded border border-white/10 space-x-0.5" role="group">
+<button class="px-2 py-0.5 rounded text-zinc-400 hover:text-zinc-200 transition font-medium text-[9px]" type="button">ID</button>
+<button class="px-2 py-0.5 rounded bg-botanical-500/20 text-botanical-400 border border-botanical-500/40 font-bold text-[9px] shadow-sm" type="button">EN</button>
+<button class="px-2 py-0.5 rounded text-zinc-400 hover:text-zinc-200 transition font-medium text-[9px]" type="button">AR</button>
+<button class="px-2 py-0.5 rounded text-zinc-400 hover:text-zinc-200 transition font-medium text-[9px]" type="button">CN</button>
+</div>
+</div>
+<!-- BEGIN: Interactive Slide Deck Controller Bar -->
+<nav class="bg-[#050907] border-b border-surface-border px-2 py-2 shadow-md" data-purpose="slide-navigation">
+<div class="flex items-center justify-between mb-1.5 px-1 font-mono text-[9.5px]">
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-botanical-500 animate-pulse"></span>
+<span class="text-zinc-300 font-semibold uppercase tracking-wider" id="active-slide-label">SLIDE 1 • OVERVIEW &amp; METRICS</span>
+</div>
+<div class="flex items-center space-x-1 text-zinc-400">
+<span class="text-amberGold-400 font-bold" id="slide-num-indicator">01</span>
+<span class="text-zinc-600">/</span>
+<span class="text-zinc-400">06</span>
+<div class="flex items-center ml-1 space-x-0.5">
+<button aria-label="Previous Slide" class="w-5 h-5 rounded bg-surface-card border border-white/10 flex items-center justify-center text-zinc-300 active:scale-90 hover:text-botanical-400" onclick="prevSlide()">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</button>
+<button aria-label="Next Slide" class="w-5 h-5 rounded bg-surface-card border border-white/10 flex items-center justify-center text-zinc-300 active:scale-90 hover:text-botanical-400" onclick="nextSlide()">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</button>
+</div>
+</div>
+</div>
+<!-- Horizontal Pill Tabs -->
+<div class="flex space-x-1.5 overflow-x-auto no-scrollbar py-0.5 font-mono text-[9px]" id="slide-tabs">
+<button class="slide-tab-btn px-2.5 py-1 rounded border shrink-0 flex items-center space-x-1 bg-botanical-500/20 text-botanical-400 border-botanical-500 font-semibold" data-slide="0" onclick="goToSlide(0)">
+<span>🌐</span><span>Overview</span>
+</button>
+<button class="slide-tab-btn px-2.5 py-1 rounded border shrink-0 flex items-center space-x-1 bg-surface-card text-zinc-400 border-white/10" data-slide="1" onclick="goToSlide(1)">
+<span>🛰️</span><span>Traceability</span>
+</button>
+<button class="slide-tab-btn px-2.5 py-1 rounded border shrink-0 flex items-center space-x-1 bg-surface-card text-zinc-400 border-white/10" data-slide="2" onclick="goToSlide(2)">
+<span>🧮</span><span>CIF Simulator</span>
+</button>
+<button class="slide-tab-btn px-2.5 py-1 rounded border shrink-0 flex items-center space-x-1 bg-surface-card text-zinc-400 border-white/10" data-slide="3" onclick="goToSlide(3)">
+<span>🌿</span><span>Harvest Catalog</span>
+</button>
+<button class="slide-tab-btn px-2.5 py-1 rounded border shrink-0 flex items-center space-x-1 bg-surface-card text-zinc-400 border-white/10" data-slide="4" onclick="goToSlide(4)">
+<span>📸</span><span>Visual Terroir</span>
+</button>
+<button class="slide-tab-btn px-2.5 py-1 rounded border shrink-0 flex items-center space-x-1 bg-surface-card text-zinc-400 border-white/10" data-slide="5" onclick="goToSlide(5)">
+<span>📦</span><span>Sample &amp; Specs</span>
+</button>
+</div>
+</nav>
+<!-- END: Interactive Slide Deck Controller Bar -->
+</div>
+<!-- END: Sticky Header Area -->
+<!-- BEGIN: Active Mobile Navigation Drawer Overlay -->
+<div class="fixed inset-0 z-50 flex justify-end max-w-[390px] mx-auto hidden" id="mobile-nav-drawer">
+<!-- Translucent Backdrop -->
+<div class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300 max-w-[390px] mx-auto" id="drawer-backdrop" onclick="document.getElementById('mobile-nav-drawer').classList.add('hidden')"></div>
+<!-- Drawer Surface -->
+<div class="relative w-full max-w-[335px] h-full bg-[#050907] border-l border-botanical-500/30 flex flex-col justify-between overflow-y-auto no-scrollbar shadow-2xl z-10">
+<!-- Drawer Header -->
+<div class="p-3.5 border-b border-white/10 bg-[#020403] sticky top-0 z-20 flex items-center justify-between">
+<div class="flex items-center space-x-2.5">
+<div class="w-9 h-9 rounded-full overflow-hidden border border-amberGold-500/40 p-0.5 bg-surface-elevated shrink-0">
+<img alt="Kartika Lestari Jaya Emblem" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida/AEtjO1X-3q0GF5kTrm_FH1pIlTzEg-wfJv6B_3wTMHLSSWGO377DpIfuSPCzN7c3sk0m7XJNIoNp8jkHuf_zjGu6JsfIIBV_Vg-oEY8fcNfYV_cew7UCTKcasue6UeEpEPY6iPBVe0ALIO4C87kZfAr1_pPJKRMlS91Zc6HwDKURv5yZ5tCTUKVj6V27jvw6PbXTeDp899H7GvAT1m8qdnOfMi5vpK3RhcpCr8t0eoGZDkc8WYyDzOnQ_sJgRaY"/>
+</div>
+<div>
+<h3 class="text-xs font-bold tracking-wider text-zinc-100 uppercase font-sans">KARTIKA LESTARI JAYA</h3>
+<p class="text-[8.5px] font-mono text-botanical-400 tracking-tight flex items-center">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-botanical-500 mr-1 animate-pulse"></span>
+            Spice Export House • Est. 1974
+          </p>
+</div>
+</div>
+<button aria-label="Close Menu" class="w-7 h-7 rounded-full bg-surface-card border border-white/15 flex items-center justify-center text-zinc-300 hover:text-zinc-100 active:scale-95 transition" id="close-drawer-btn" onclick="document.getElementById('mobile-nav-drawer').classList.add('hidden')">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+<!-- Scrollable Drawer Body -->
+<div class="p-3.5 space-y-4 font-sans">
+<!-- Main Navigation Links List -->
+<nav aria-label="Mobile Primary Links" class="space-y-1.5">
+<button class="w-full text-left flex items-center justify-between p-2.5 rounded-lg bg-surface-card/60 hover:bg-surface-elevated border border-transparent hover:border-white/10 text-zinc-200 transition group" onclick="goToSlide(0); document.getElementById('mobile-nav-drawer').classList.add('hidden')">
+<div class="flex items-center space-x-2.5">
+<span class="text-botanical-400 text-xs font-mono">01</span>
+<span class="text-xs font-medium group-hover:text-botanical-400 transition">Slide 1: Overview &amp; Volcanic Terroirs</span>
+</div>
+<svg class="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-300 transition" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="w-full text-left flex items-center justify-between p-2.5 rounded-lg bg-surface-card hover:bg-surface-elevated border border-botanical-500/20 text-zinc-200 transition group" onclick="goToSlide(1); document.getElementById('mobile-nav-drawer').classList.add('hidden')">
+<div class="flex items-center space-x-2.5">
+<span class="text-botanical-400 text-xs font-mono">02</span>
+<div class="flex flex-col">
+<span class="text-xs font-medium group-hover:text-botanical-400 transition">Slide 2: Digital Traceability Hub</span>
+<span class="text-[9px] text-zinc-400 font-mono">Vessel Dispatch &amp; SGS Assays</span>
+</div>
+</div>
+<span class="px-1.5 py-0.5 text-[8px] font-mono rounded bg-botanical-950 text-botanical-400 border border-botanical-500/30">LIVE AIS</span>
+</button>
+<button class="w-full text-left flex items-center justify-between p-2.5 rounded-lg bg-surface-card hover:bg-surface-elevated border border-white/5 text-zinc-200 transition group" onclick="goToSlide(2); document.getElementById('mobile-nav-drawer').classList.add('hidden')">
+<div class="flex items-center space-x-2.5">
+<span class="text-amberGold-400 text-xs font-mono">03</span>
+<div class="flex flex-col">
+<span class="text-xs font-medium group-hover:text-amberGold-400 transition">Slide 3: FOB &amp; CIF Simulator</span>
+<span class="text-[9px] text-zinc-400 font-mono">Landed Cost Engine</span>
+</div>
+</div>
+<span class="px-1.5 py-0.5 text-[8px] font-mono rounded bg-amberGold-950 text-amberGold-400 border border-amberGold-500/30">INCOTERMS</span>
+</button>
+<button class="w-full text-left flex items-center justify-between p-2.5 rounded-lg bg-surface-card/60 hover:bg-surface-elevated border border-transparent hover:border-white/10 text-zinc-200 transition group" onclick="goToSlide(3); document.getElementById('mobile-nav-drawer').classList.add('hidden')">
+<div class="flex items-center space-x-2.5">
+<span class="text-botanical-400 text-xs font-mono">04</span>
+<div class="flex flex-col">
+<span class="text-xs font-medium group-hover:text-botanical-400 transition">Slide 4: Export Harvest Catalog</span>
+<span class="text-[9px] text-zinc-400 font-mono">Clove, Cassia, Nutmeg ASTA/ESA</span>
+</div>
+</div>
+<svg class="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-300 transition" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="w-full text-left flex items-center justify-between p-2.5 rounded-lg bg-surface-card/60 hover:bg-surface-elevated border border-transparent hover:border-white/10 text-zinc-200 transition group" onclick="goToSlide(4); document.getElementById('mobile-nav-drawer').classList.add('hidden')">
+<div class="flex items-center space-x-2.5">
+<span class="text-botanical-400 text-xs font-mono">05</span>
+<div class="flex flex-col">
+<span class="text-xs font-medium group-hover:text-botanical-400 transition">Slide 5: Visual Terroir Archive</span>
+<span class="text-[9px] text-zinc-400 font-mono">High-Res Provenance Gallery</span>
+</div>
+</div>
+<svg class="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-300 transition" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="w-full text-left flex items-center justify-between p-2.5 rounded-lg bg-botanical-950/40 hover:bg-botanical-950 border border-botanical-500/30 text-zinc-200 transition group" onclick="goToSlide(5); document.getElementById('mobile-nav-drawer').classList.add('hidden')">
+<div class="flex items-center space-x-2.5">
+<span class="text-amberGold-400 text-xs font-mono">06</span>
+<div class="flex flex-col">
+<span class="text-xs font-medium group-hover:text-botanical-400 transition">Slide 6: Specimen Kit &amp; Contact</span>
+<span class="text-[9px] text-zinc-400 font-mono">72-HR DHL Dispatch + Institutional</span>
+</div>
+</div>
+<span class="px-1.5 py-0.5 text-[8px] font-mono rounded bg-amberGold-950 text-amberGold-400 border border-amberGold-500/30">DISPATCH</span>
+</button>
+</nav>
+<!-- Quick Trading Desk & Spot Data Card -->
+<div class="p-3 rounded-lg bg-[#070c09] border border-surface-border space-y-2 font-mono text-[9.5px]">
+<div class="flex items-center justify-between border-b border-white/5 pb-1.5 text-zinc-400">
+<span class="text-botanical-400 font-semibold flex items-center">
+<span class="w-1.5 h-1.5 rounded-full bg-botanical-500 mr-1 animate-pulse"></span>
+            GLOBAL TRADING DESKS
+          </span>
+<span class="text-zinc-500 text-[8.5px]">38 NATIONS</span>
+</div>
+<div class="grid grid-cols-2 gap-2 text-zinc-400 text-[9px]">
+<div>
+<span class="text-zinc-300 font-semibold block">Rotterdam (EU):</span>
+<span class="text-zinc-500">Weena 505 Financial Hub</span>
+</div>
+<div>
+<span class="text-zinc-300 font-semibold block">Dubai (DMCC):</span>
+<span class="text-zinc-500">Free Zone Ag Tower</span>
+</div>
+<div>
+<span class="text-zinc-300 font-semibold block">Singapore Hub:</span>
+<span class="text-zinc-500">Marina Bay Financial</span>
+</div>
+<div>
+<span class="text-zinc-300 font-semibold block">Jakarta HQ:</span>
+<span class="text-zinc-500">Wisma BNI 46 Wharf Hub</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Drawer Footer Actions -->
+<div class="p-3.5 border-t border-white/10 bg-[#020403] space-y-2 font-mono">
+<button class="w-full py-2.5 bg-gradient-to-r from-amberGold-500 to-amber-600 text-oled font-bold text-xs rounded text-center tracking-wide shadow-sm flex items-center justify-center space-x-1.5 active:opacity-90 shimmer-btn" onclick="goToSlide(2); document.getElementById('mobile-nav-drawer').classList.add('hidden')">
+<svg class="w-3.5 h-3.5 relative z-10" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="relative z-10">Configure CIF Quotation</span>
+</button>
+<p class="text-[8px] text-zinc-500 text-center pt-0.5">
+        Export License No. 891/DAG-EXP/IDX • PT Kartika Lestari Jaya
+      </p>
+</div>
+</div>
+</div>
+<!-- END: Active Mobile Navigation Drawer Overlay -->
+<!-- ================================================================= -->
+<!-- BEGIN: SLIDE DECKS CONTAINER (6 COMPACT INTERACTIVE SLIDES) -->
+<!-- ================================================================= -->
+<main class="flex-1 overflow-x-hidden" id="slides-master-container">
+<!-- ================= SLIDE 1: OVERVIEW & HERO ================= -->
+<div class="slide-panel" data-panel-index="0" id="slide-0">
+<!-- BEGIN: Hero Section with Vivid Background -->
+<section class="relative overflow-hidden p-3.5 pt-4 space-y-4 border-b border-surface-border min-h-[480px] flex flex-col justify-between" data-purpose="hero-overview">
+<!-- Background Image Layer: Enhanced vivid presentation of Indonesian spices -->
+<div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+<img alt="Authentic Indonesian Spices Provenance" class="w-full h-full object-cover object-center opacity-70 scale-105 filter saturate-125 brightness-95" src="https://lh3.googleusercontent.com/aida/AEtjO1XpxjpIru3wbkXt2BokJ3HReNmWAuYV2cLf4wXYfM5hAIZUf6X05SVypaYTSKyutQpQm3omcK-Z9bXM8QfxKbLND17Vi1SAGKNtQahAs9F4vqVWYBoFguzKD76nrgZ6MfHW5Am5ih_y2ExyGDXsoRqK60DpJllsEmBVqaSW7OKFWo6ZDOgYm5OqoU_vdl9QVU59TOXUZrRRSlwpXjY3AWJ5YuMF0tbKaDh19SvU2Xne_0MzOKeALrXOhzM"/>
+<div class="absolute inset-0 bg-gradient-to-b from-[#030504]/75 via-[#030504]/60 to-[#030504]/95"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-oled via-transparent to-[#030504]/40"></div>
+</div>
+<!-- Hero Content Layer -->
+<div class="relative z-10 space-y-3.5">
+<!-- Supertag badge & Moisture Chip -->
+<div class="flex items-center justify-between">
+<div class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-oled/90 backdrop-blur-md border border-botanical-500/40 text-[10px] text-zinc-200 font-mono shadow-md">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+<span class="text-botanical-400 font-semibold">MALUKU • KERINCI • BANDA</span>
+</div>
+<div class="bg-oled/90 backdrop-blur-md px-2.5 py-1 rounded-full border border-amberGold-500/40 flex items-center space-x-1.5 shadow-md">
+<span class="w-1.5 h-1.5 rounded-full bg-amberGold-400"></span>
+<span class="text-[9.5px] font-mono text-zinc-100 font-bold">11.4% <span class="text-zinc-400 font-normal">moisture</span></span>
+</div>
+</div>
+<!-- Editorial Title with High Contrast -->
+<div class="space-y-1.5 pt-1">
+<h2 class="text-[30px] leading-[1.12] font-serif tracking-tight text-white font-light drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+From Indonesia’s Volcanic Terroirs to <span class="italic text-amberGold-400 font-normal underline decoration-amberGold-500/40 underline-offset-4">Global Pantries.</span>
+</h2>
+<p class="text-[12px] text-zinc-200 font-sans leading-relaxed pt-0.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] bg-black/40 p-2 rounded-lg backdrop-blur-sm border border-white/10">
+Empowering 4,200+ smallholder spice farming guardians. Guaranteed spectrophotometer moisture accuracy, ISO 22000, &amp; USDA Organic certified.
+</p>
+</div>
+<!-- Active Export Direct Port Badge Bar -->
+<div class="p-2.5 rounded-lg bg-surface-card/90 backdrop-blur-md border border-botanical-500/35 flex items-center justify-between text-[11px] shadow-sm">
+<div>
+<span class="text-[8.5px] font-mono text-botanical-400 block leading-tight">ACTIVE DIRECT PORT</span>
+<span class="text-zinc-100 font-semibold font-sans">Surabaya (IDSUB)</span>
+</div>
+<div class="text-right font-mono">
+<span class="text-[8.5px] text-zinc-500 block leading-tight">CONTAINER FREIGHT</span>
+<span class="text-[9.5px] text-zinc-300">Liners: NL, US, JP</span>
+</div>
+</div>
+<!-- Mobile Action Buttons -->
+<div class="grid grid-cols-2 gap-2 pt-0.5">
+<button class="w-full py-2.5 bg-botanical-500 text-oled font-medium text-center text-xs rounded tracking-tight font-sans font-semibold active:bg-botanical-400 flex items-center justify-center space-x-1.5 shadow-sm transition" onclick="goToSlide(2)">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Landed CIF Quote</span>
+</button>
+<button class="w-full py-2.5 bg-surface-card/90 backdrop-blur-md border border-white/15 text-zinc-200 font-medium text-center text-xs rounded tracking-tight font-sans active:bg-surface-elevated flex items-center justify-center space-x-1.5 transition" onclick="goToSlide(1)">
+<svg class="w-3.5 h-3.5 text-amberGold-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Audit Provenance</span>
+</button>
+</div>
+<!-- 2x2 Metric KPI Grid -->
+<div class="grid grid-cols-2 gap-2 pt-1">
+<!-- Card 1 -->
+<div class="p-3 bg-surface-card/90 backdrop-blur-md rounded-lg border border-surface-border flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between text-zinc-400 text-[10px] font-mono">
+<span>ANNUAL CONSIGNMENT</span>
+<span class="text-botanical-400">●</span>
+</div>
+<div class="mt-2">
+<span class="text-xl font-bold font-mono text-zinc-100">48,000</span>
+<span class="text-[10px] font-mono text-amberGold-400 ml-1">MT</span>
+<p class="text-[9px] text-zinc-500 mt-0.5">Across 2024 calendar</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="p-3 bg-surface-card/90 backdrop-blur-md rounded-lg border border-surface-border flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between text-zinc-400 text-[10px] font-mono">
+<span>DISCHARGE PORTS</span>
+<span class="text-botanical-400">●</span>
+</div>
+<div class="mt-2">
+<span class="text-xl font-bold font-mono text-zinc-100">38</span>
+<span class="text-[10px] font-mono text-botanical-400 ml-1">Nations</span>
+<p class="text-[9px] text-zinc-500 mt-0.5">Single-window customs cleared</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="p-3 bg-surface-card/90 backdrop-blur-md rounded-lg border border-surface-border flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between text-zinc-400 text-[10px] font-mono">
+<span>OCEAN ON-TIME</span>
+<span class="text-botanical-400">●</span>
+</div>
+<div class="mt-2">
+<span class="text-xl font-bold font-mono text-zinc-100">99.4%</span>
+<p class="text-[9px] text-zinc-500 mt-0.5">Continuous cold-hub staging</p>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="p-3 bg-surface-card/90 backdrop-blur-md rounded-lg border border-surface-border flex flex-col justify-between shadow-sm">
+<div class="flex items-center justify-between text-zinc-400 text-[10px] font-mono">
+<span>FOREIGN MATTER</span>
+<span class="text-botanical-400">●</span>
+</div>
+<div class="mt-2">
+<span class="text-xl font-bold font-mono text-botanical-400">0.00%</span>
+<p class="text-[9px] text-zinc-500 mt-0.5">ASTA clean triple-aspirated</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Slide Bottom Navigation Bar -->
+<div class="pt-2 border-t border-white/10 flex items-center justify-between font-mono text-[10px]">
+<span class="text-zinc-500">1 of 6 • Deck Overview</span>
+<button class="px-3 py-1.5 bg-botanical-500/20 text-botanical-400 border border-botanical-500/40 rounded flex items-center space-x-1 font-semibold" onclick="nextSlide()">
+<span>Next: Traceability Hub</span>
+<span>→</span>
+</button>
+</div>
+</section>
+</div>
+<!-- ================= SLIDE 2: DIGITAL TRACEABILITY ================= -->
+<div class="slide-panel hidden" data-panel-index="1" id="slide-1">
+<section class="p-3.5 space-y-3" data-purpose="bento-data-infrastructure" id="traceability">
+<!-- Header -->
+<div>
+<div class="text-[10px] font-mono text-amberGold-400 tracking-wider flex items-center space-x-1">
+<span>⚡ INTELLIGENT DATA INFRASTRUCTURE</span>
+</div>
+<h3 class="text-lg font-serif font-normal text-zinc-100">Digital Traceability &amp; Vessel Dispatch Hub</h3>
+<p class="text-[11px] text-zinc-400">High-density operational desk bridging Indonesian mountain cooperatives with marine logistics.</p>
+</div>
+<!-- Preset Lot selector buttons -->
+<div class="flex space-x-1.5 overflow-x-auto no-scrollbar py-1">
+<button class="px-2.5 py-1 text-[10px] font-mono rounded bg-botanical-950 text-botanical-400 border border-botanical-500/40 shrink-0 font-medium">KLJ-CIN-2025-MLK</button>
+<button class="px-2.5 py-1 text-[10px] font-mono rounded bg-surface-card text-zinc-400 border border-white/10 shrink-0">KLJ-CLV-802-SBY</button>
+<button class="px-2.5 py-1 text-[10px] font-mono rounded bg-surface-card text-zinc-400 border border-white/10 shrink-0">KLJ-SNX-402-BLI</button>
+</div>
+<!-- Traceability Dossier Card -->
+<div class="p-3 bg-surface-card rounded-xl border border-surface-border space-y-3">
+<div class="flex items-start justify-between border-b border-white/5 pb-2.5">
+<div>
+<span class="text-[9px] font-mono text-amberGold-400 font-bold block">ACTIVE LOT AUDIT</span>
+<h4 class="text-xs font-semibold text-zinc-200">Organic Cassia Cinnamon AA Sticks</h4>
+<p class="text-[9px] font-mono text-zinc-500">Blockchain Ledger #0x9F20...814a</p>
+</div>
+<span class="px-2 py-0.5 text-[9px] font-mono rounded bg-botanical-900/60 text-botanical-400 border border-botanical-500/30">VERIFIED</span>
+</div>
+<!-- Vertical Step Pipeline -->
+<div class="space-y-2 relative pl-2 border-l border-white/10 text-[10px] font-mono ml-2">
+<div class="relative pl-3">
+<div class="absolute -left-[13px] top-1 w-2 h-2 rounded-full bg-botanical-500"></div>
+<span class="text-zinc-300 font-semibold block">1. WILD HARVEST</span>
+<span class="text-zinc-500 text-[9px]">Dec 12, 2024 • Mount Kerinci Highlands</span>
+</div>
+<div class="relative pl-3">
+<div class="absolute -left-[13px] top-1 w-2 h-2 rounded-full bg-botanical-500"></div>
+<span class="text-zinc-300 font-semibold block">2. SOLAR CURE</span>
+<span class="text-zinc-500 text-[9px]">Dec 14 - 22 • Tunnel dehumidified &lt; 12%</span>
+</div>
+<div class="relative pl-3">
+<div class="absolute -left-[13px] top-1 w-2 h-2 rounded-full bg-botanical-500"></div>
+<span class="text-zinc-300 font-semibold block">3. ISO ASSAY</span>
+<span class="text-zinc-500 text-[9px]">Jan 04, 2025 • Spectroscopy SGS cleared</span>
+</div>
+<div class="relative pl-3">
+<div class="absolute -left-[13px] top-1 w-2 h-2 rounded-full bg-amberGold-400"></div>
+<span class="text-zinc-300 font-semibold block">4. STAGE EXPORT</span>
+<span class="text-zinc-500 text-[9px]">Jan 18, 2025 • Tanjung Perak Berth 104</span>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="pt-2 border-t border-white/5 flex items-center justify-between text-[10px]">
+<button class="text-botanical-400 font-mono flex items-center space-x-1 hover:underline">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+<span>Official COA Dossier</span>
+</button>
+<span class="text-zinc-500 font-mono text-[9px]">Canopy Audit 100%</span>
+</div>
+</div>
+<!-- Certified Quality Gauges -->
+<div class="p-3 bg-surface-card rounded-xl border border-surface-border space-y-2.5">
+<div class="flex items-center justify-between">
+<span class="text-[10px] font-mono text-zinc-400">SPECTROSCOPY LAB SPECS</span>
+<span class="text-[9px] font-mono text-botanical-400 bg-botanical-950 px-1.5 py-0.5 rounded border border-botanical-500/20">SGS ASSAYED</span>
+</div>
+<div class="space-y-2 font-mono text-[10px]">
+<div>
+<div class="flex justify-between text-zinc-300 pb-0.5">
+<span>Essential Oil / Eugenol</span>
+<span class="text-amberGold-400 font-bold">3.82%</span>
+</div>
+<div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+<div class="h-full bg-amberGold-500 rounded-full" style="width: 82%;"></div>
+</div>
+<span class="text-[8px] text-zinc-500">Min Standard: 2.50% (Above ESA Grade A)</span>
+</div>
+<div>
+<div class="flex justify-between text-zinc-300 pb-0.5">
+<span>Moisture Content</span>
+<span class="text-botanical-400 font-bold">11.4%</span>
+</div>
+<div class="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+<div class="h-full bg-botanical-500 rounded-full" style="width: 64%;"></div>
+</div>
+<span class="text-[8px] text-zinc-500">Max Standard: 13.5% (Anti-Mold Safe)</span>
+</div>
+</div>
+<!-- Quick badges -->
+<div class="grid grid-cols-2 gap-1.5 pt-1 text-[9px] font-mono">
+<div class="bg-oled p-1.5 rounded border border-white/5 flex items-center space-x-1">
+<span class="text-botanical-400">✓</span>
+<span class="text-zinc-300">Aflatoxin B1: &lt; 2 ppb</span>
+</div>
+<div class="bg-oled p-1.5 rounded border border-white/5 flex items-center space-x-1">
+<span class="text-botanical-400">✓</span>
+<span class="text-zinc-300">Salmonella: Neg/25g</span>
+</div>
+</div>
+</div>
+<!-- Live Vessel Dispatch Radar -->
+<div class="p-3 bg-surface-card rounded-xl border border-surface-border space-y-2">
+<div class="flex items-center justify-between border-b border-white/5 pb-1.5">
+<div class="flex items-center space-x-1.5">
+<span class="w-2 h-2 rounded-full bg-botanical-500 animate-ping"></span>
+<span class="text-[10px] font-mono text-zinc-200 font-bold">VESSEL DISPATCH RADAR</span>
+</div>
+<span class="text-[9px] font-mono text-zinc-400">Surabaya: 3 Liners Route</span>
+</div>
+<!-- Liner cards stack -->
+<div class="space-y-1.5 text-[10px] font-mono">
+<div class="p-2 bg-oled rounded border border-white/5 flex items-center justify-between">
+<div>
+<div class="text-zinc-200 font-semibold">CMA CGM Palais Royal</div>
+<div class="text-[9px] text-zinc-400">Surabaya → Rotterdam (NL RTM)</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-botanical-950 text-botanical-400 border border-botanical-500/30 text-[9px]">In Transit</span>
+</div>
+<div class="p-2 bg-oled rounded border border-white/5 flex items-center justify-between">
+<div>
+<div class="text-zinc-200 font-semibold">Maersk Mc-Kinney Moller</div>
+<div class="text-[9px] text-zinc-400">Jakarta → Los Angeles (US LAX)</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-amberGold-950 text-amberGold-400 border border-amberGold-500/30 text-[9px]">Customs Staged</span>
+</div>
+<div class="p-2 bg-oled rounded border border-white/5 flex items-center justify-between">
+<div>
+<div class="text-zinc-200 font-semibold">ONE Apus Express</div>
+<div class="text-[9px] text-zinc-400">Surabaya → Yokohama (JP YOK)</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-white/10 text-[9px]">Wharf Staged</span>
+</div>
+</div>
+</div>
+<!-- Slide Bottom Navigation -->
+<div class="pt-2 border-t border-white/10 flex items-center justify-between font-mono text-[10px]">
+<button class="px-2.5 py-1 bg-surface-card border border-white/10 rounded text-zinc-400" onclick="prevSlide()">
+    ← Prev
+  </button>
+<span class="text-zinc-500">2 of 6</span>
+<button class="px-3 py-1 bg-botanical-500/20 text-botanical-400 border border-botanical-500/40 rounded flex items-center space-x-1 font-semibold" onclick="nextSlide()">
+<span>Next: CIF Simulator</span>
+<span>→</span>
+</button>
+</div>
+</section>
+</div>
+<!-- ================= SLIDE 3: FOB & CIF SIMULATOR ================= -->
+<div class="slide-panel hidden" data-panel-index="2" id="slide-2">
+<section class="p-3.5 space-y-3" data-purpose="consignment-calculator" id="simulator">
+<div>
+<span class="text-[10px] font-mono text-amberGold-400 block tracking-wider">⚡ REAL-TIME LANDED COST ENGINE</span>
+<h3 class="text-lg font-serif text-zinc-100 font-normal">FOB &amp; CIF Consignment Simulator</h3>
+<p class="text-[11px] text-zinc-400">Instant algorithm calculating spot commodity prices, packaging differentials, &amp; ocean freight.</p>
+</div>
+<!-- Simulator Inputs Card -->
+<div class="p-3.5 bg-surface-card rounded-xl border border-surface-border space-y-3">
+<!-- 1. Commodity Selector -->
+<div>
+<label class="block text-[10px] font-mono text-zinc-300 mb-1 flex justify-between">
+<span>1. SELECT BOTANICAL COMMODITY</span>
+<span class="text-amberGold-400">SPOT CROP 24/25</span>
+</label>
+<select class="w-full bg-oled border border-white/15 rounded-md text-xs text-zinc-200 p-2 font-mono focus:border-botanical-500 focus:ring-0">
+<option>Cassia Cinnamon AA Long Sticks ($4,200/MT)</option>
+<option>Moluccan Clove Handpicked FAQ ($8,450/MT)</option>
+<option>Banda Island Nutmeg ABCD Whole ($11,300/MT)</option>
+<option>Lampung Black Pepper ASTA Clean ($7,100/MT)</option>
+</select>
+</div>
+<!-- 2. Container Configuration -->
+<div>
+<label class="block text-[10px] font-mono text-zinc-300 mb-1">2. SHIPMENT LOAD PROFILE</label>
+<div class="grid grid-cols-3 gap-1.5 text-center font-mono text-[10px]">
+<div class="p-2 rounded border border-botanical-500 bg-botanical-950/60 text-botanical-400 font-semibold cursor-pointer">
+            20ft FCL
+            <span class="block text-[8px] text-zinc-400 font-normal">14.0 MT Max</span>
+</div>
+<div class="p-2 rounded border border-white/10 bg-oled text-zinc-400 cursor-pointer">
+            40ft HC
+            <span class="block text-[8px] text-zinc-500">26.0 MT Max</span>
+</div>
+<div class="p-2 rounded border border-white/10 bg-oled text-zinc-400 cursor-pointer">
+            LCL Crate
+            <span class="block text-[8px] text-zinc-500">500kg Min</span>
+</div>
+</div>
+</div>
+<!-- 3. Packaging -->
+<div>
+<label class="block text-[10px] font-mono text-zinc-300 mb-1">3. FOOD-GRADE EXPORT PACKAGING</label>
+<div class="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+<label class="flex items-center space-x-2 bg-oled p-2 rounded border border-white/10">
+<input checked="" class="text-botanical-500 focus:ring-0 bg-zinc-900 border-white/20" name="packaging" type="radio"/>
+<span class="text-zinc-200">25kg PP Bags (Std)</span>
+</label>
+<label class="flex items-center space-x-2 bg-oled p-2 rounded border border-white/10">
+<input class="text-botanical-500 focus:ring-0 bg-zinc-900 border-white/20" name="packaging" type="radio"/>
+<span class="text-zinc-200">10kg Vac (+5%)</span>
+</label>
+</div>
+</div>
+<!-- 4. Seaport Routing -->
+<div class="grid grid-cols-2 gap-2 text-[10px] font-mono">
+<div>
+<span class="text-zinc-400 block mb-0.5">LOADING SEAPORT</span>
+<select class="w-full bg-oled border border-white/10 rounded p-1.5 text-zinc-200 text-[10px]">
+<option>Surabaya (IDSUB)</option>
+<option>Jakarta (IDJKT)</option>
+<option>Belawan (IDBLW)</option>
+</select>
+</div>
+<div>
+<span class="text-zinc-400 block mb-0.5">DESTINATION (CIF)</span>
+<select class="w-full bg-oled border border-white/10 rounded p-1.5 text-zinc-200 text-[10px]">
+<option>Rotterdam (NL) - 24d</option>
+<option>Los Angeles (US) - 21d</option>
+<option>Yokohama (JP) - 14d</option>
+<option>Jebel Ali (AE) - 11d</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Live Calculated Consignment Summary Card -->
+<div class="p-3.5 bg-[#09110d] rounded-xl border border-botanical-500/40 glow-emerald space-y-2.5">
+<div class="flex items-center justify-between border-b border-botanical-500/20 pb-2">
+<div>
+<span class="text-[9px] font-mono text-botanical-400 uppercase">ALGORITHMIC LEDGER</span>
+<h4 class="text-xs font-mono font-bold text-zinc-100">Consignment Summary</h4>
+</div>
+<span class="text-[9px] font-mono px-2 py-0.5 bg-botanical-900/60 rounded text-botanical-400 border border-botanical-500/30">Incoterms 2020</span>
+</div>
+<!-- Line items -->
+<div class="space-y-1 text-[11px] font-mono">
+<div class="flex justify-between text-zinc-300">
+<span class="text-zinc-400">Selected Load Mass:</span>
+<span>14.0 Metric Tons</span>
+</div>
+<div class="flex justify-between text-zinc-300">
+<span class="text-zinc-400">FOB Net Cargo Value:</span>
+<span>$58,800.00 USD</span>
+</div>
+<div class="flex justify-between text-zinc-300">
+<span class="text-zinc-400">Ocean Liner Freight:</span>
+<span>$1,950.00 USD</span>
+</div>
+<div class="flex justify-between text-zinc-300">
+<span class="text-zinc-400">Phyto &amp; Fumigation:</span>
+<span class="text-botanical-400">$380.00 USD (Included)</span>
+</div>
+<div class="flex justify-between text-zinc-300">
+<span class="text-zinc-400">Estimated Ocean Transit:</span>
+<span class="text-amberGold-400">24 Ocean Days</span>
+</div>
+<div class="flex justify-between text-zinc-300">
+<span class="text-zinc-400">Carbon Footprint Neutral:</span>
+<span>1.84 MT C02 (Cert)</span>
+</div>
+</div>
+<!-- Total Price Banner -->
+<div class="pt-2 border-t border-white/10 flex items-baseline justify-between">
+<div>
+<span class="text-[9px] font-mono text-zinc-400 block">ESTIMATED CIF LANDED TOTAL</span>
+<span class="text-2xl font-mono font-extrabold text-botanical-400">$60,750</span>
+<span class="text-[10px] font-mono text-zinc-400">USD</span>
+</div>
+<span class="text-[9px] font-mono text-zinc-400">Spot lock 7-day window</span>
+</div>
+<!-- Rate lock button -->
+<button class="w-full py-2.5 bg-gradient-to-r from-amberGold-500 to-amber600 text-oled font-mono font-bold text-xs rounded uppercase tracking-wider active:opacity-90 flex items-center justify-center space-x-1.5 shimmer-btn">
+<svg class="w-3.5 h-3.5 relative z-10" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="relative z-10">Lock Spot CIF Rate for 7 Days</span>
+</button>
+<p class="text-[8px] text-zinc-500 font-mono text-center">Includes SGS Lab COA, Phytosanitary Certificate, Form AK/D/ICO Origin declaration, and Clean B/L.</p>
+</div>
+<!-- Slide Bottom Navigation -->
+<div class="pt-2 border-t border-white/10 flex items-center justify-between font-mono text-[10px]">
+<button class="px-2.5 py-1 bg-surface-card border border-white/10 rounded text-zinc-400" onclick="prevSlide()">
+    ← Prev
+  </button>
+<span class="text-zinc-500">3 of 6</span>
+<button class="px-3 py-1 bg-botanical-500/20 text-botanical-400 border border-botanical-500/40 rounded flex items-center space-x-1 font-semibold" onclick="nextSlide()">
+<span>Next: Harvest Catalog</span>
+<span>→</span>
+</button>
+</div>
+</section>
+</div>
+<!-- ================= SLIDE 4: HARVEST CATALOG & ESG ================= -->
+<div class="slide-panel hidden" data-panel-index="3" id="slide-3">
+<section class="p-3.5 space-y-3" data-purpose="harvest-catalog">
+<div class="flex items-center justify-between">
+<div>
+<span class="text-[9px] font-mono text-botanical-400 uppercase">DIRECT FARMGATE PROVENANCE</span>
+<h3 class="text-lg font-serif text-zinc-100">Export Harvest Catalog</h3>
+</div>
+<div class="flex space-x-1 text-[8px] font-mono text-zinc-400">
+<span class="px-1.5 py-0.5 rounded bg-surface-card border border-white/5">Steam Sterilized</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-card border border-white/5">Zero Irradiation</span>
+</div>
+</div>
+<!-- Horizontal Swipeable Botanical Catalog Cards -->
+<div class="flex space-x-3 overflow-x-auto no-scrollbar pb-2 pt-1">
+<!-- Catalog Item 1: Cassia -->
+<article class="w-[270px] shrink-0 bg-surface-card rounded-xl border border-surface-border overflow-hidden flex flex-col justify-between" data-purpose="product-card">
+<div>
+<div class="relative h-36">
+<img alt="Cassia Cinnamon AA" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1Wby6NJKAy4cZJ3I3k-wFa8Jgd1nd1M7n2FGMxa2v_D4esHz1SDUFXfGiWdHr7G3z6coXA-mTJOnGOpHDl4fFk3qfT7zo42tUv_xeB9U8P8wewSUeAYuELBNjCPdOJyCqQDRtnKKjiov3IN73RxgTIHLg8C7VFb9_Fbf5LcSpnc9xBVIXbn20MXJ5f1gC2XFWrC9Ui-OJuZDX7ZzhPflZ7yXFzox8zYypZNArMW8E6Mdui7I-aNbLsBWA"/>
+<span class="absolute top-2 left-2 bg-oled/90 font-mono text-[9px] px-2 py-0.5 rounded text-amberGold-400 border border-amberGold-500/30">Grade AA Long Sticks</span>
+<span class="absolute bottom-2 left-2 bg-black/80 font-mono text-[8px] px-1.5 py-0.5 rounded text-zinc-300">Kerinci, Sumatra</span>
+</div>
+<div class="p-3 space-y-2">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-serif text-sm font-medium text-zinc-100">Cinnamomum Burmannii</h4>
+<p class="text-[9px] font-mono text-zinc-400">HS 0906.11</p>
+</div>
+</div>
+<p class="text-[10px] text-zinc-400 leading-snug">Rich cinnamaldehyde with deep sweet wood notes. Hand-scraped and shade dried to preserve volatile oils.</p>
+<div class="grid grid-cols-2 gap-1 text-[9px] font-mono bg-oled p-1.5 rounded border border-white/5">
+<div>
+<span class="text-zinc-500 block">VOLATILE OIL</span>
+<span class="text-zinc-200 font-semibold">Min 2.80% - 3.5%</span>
+</div>
+<div>
+<span class="text-zinc-500 block">MOISTURE</span>
+<span class="text-botanical-400 font-semibold">Max 13.0%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-3 pt-0 flex items-center justify-between border-t border-white/5 mt-2">
+<div>
+<span class="text-[8px] font-mono text-zinc-500 block">INDICATIVE FOB</span>
+<span class="text-xs font-mono font-bold text-zinc-100">$4,200 <span class="text-[9px] font-normal text-zinc-400">/ MT</span></span>
+</div>
+<button class="px-2.5 py-1.5 bg-botanical-500 text-oled font-mono font-bold text-[10px] rounded active:bg-botanical-400" onclick="goToSlide(5)">
+            Sample 250g
+          </button>
+</div>
+</article>
+<!-- Catalog Item 2: Clove -->
+<article class="w-[270px] shrink-0 bg-surface-card rounded-xl border border-surface-border overflow-hidden flex flex-col justify-between" data-purpose="product-card">
+<div>
+<div class="relative h-36">
+<img alt="Moluccan Cloves" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1UnccOxfP2fADWRoO5jGlmXfXqorvN0S6o8p5j6BpoXnsbDgYJsyju5dsmKVq6IU8sqAeu763MhIAqH59D6saWn1A1heMtsDDq_lOQ4zG2YIag1dO5bg0xgb31BkYagKSKP7XlcU5LvZVVL5hqf1773YV2r5_4PVD0xfy714DeWajdLHf-0QFHO78OZTOeGyixeykinA88HCoi-BDHmEtxxt_D484EGbEQ-BjWD2N0IpCRXXJEdNW68Ig"/>
+<span class="absolute top-2 left-2 bg-oled/90 font-mono text-[9px] px-2 py-0.5 rounded text-botanical-400 border border-botanical-500/30">Lalperi Handpicked FAQ</span>
+<span class="absolute bottom-2 left-2 bg-black/80 font-mono text-[8px] px-1.5 py-0.5 rounded text-zinc-300">Maluku Spice Islands</span>
+</div>
+<div class="p-3 space-y-2">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-serif text-sm font-medium text-zinc-100">Syzygium Aromaticum</h4>
+<p class="text-[9px] font-mono text-zinc-400">HS 0907.10</p>
+</div>
+</div>
+<p class="text-[10px] text-zinc-400 leading-snug">Legendary Moluccan clove buds with intact four-pointed calyx heads. High essential oil and warm pungent scent.</p>
+<div class="grid grid-cols-2 gap-1 text-[9px] font-mono bg-oled p-1.5 rounded border border-white/5">
+<div>
+<span class="text-zinc-500 block">EUGENOL CONTENT</span>
+<span class="text-zinc-200 font-semibold">Min 75% - 82%</span>
+</div>
+<div>
+<span class="text-zinc-500 block">FOREIGN MATTER</span>
+<span class="text-botanical-400 font-semibold">0.0% Cleaned</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-3 pt-0 flex items-center justify-between border-t border-white/5 mt-2">
+<div>
+<span class="text-[8px] font-mono text-zinc-500 block">INDICATIVE FOB</span>
+<span class="text-xs font-mono font-bold text-zinc-100">$8,450 <span class="text-[9px] font-normal text-zinc-400">/ MT</span></span>
+</div>
+<button class="px-2.5 py-1.5 bg-botanical-500 text-oled font-mono font-bold text-[10px] rounded active:bg-botanical-400" onclick="goToSlide(5)">
+            Sample 250g
+          </button>
+</div>
+</article>
+<!-- Catalog Item 3: Nutmeg -->
+<article class="w-[270px] shrink-0 bg-surface-card rounded-xl border border-surface-border overflow-hidden flex flex-col justify-between" data-purpose="product-card">
+<div>
+<div class="relative h-36">
+<img alt="Banda Nutmeg" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1XySueeUca8EOgqO1HUHfrS21J06W9P8PYsV1X7yIPBD5NZL96MgcLDRdsg0pX0XHpIA-LMzpxkpMWijrZWkqsfi4RBzsENwfbrX9L5OavgReJsPKOqJzQmm1N5fO4aZ7dgjQm6ObW0qbgrpiuqyE9b_-bTZBGe0pf8H2aFP2tzaUVsAQsP_P1kplMSa_T2MTEExLL_OaeOMRSvC6FRZsxQogmg5aK74tiE4wbD3dl5anXdB-luXaz3qg"/>
+<span class="absolute top-2 left-2 bg-oled/90 font-mono text-[9px] px-2 py-0.5 rounded text-amberGold-400 border border-amberGold-500/30">ABCD Whole Round</span>
+<span class="absolute bottom-2 left-2 bg-black/80 font-mono text-[8px] px-1.5 py-0.5 rounded text-zinc-300">Banda Neira Island</span>
+</div>
+<div class="p-3 space-y-2">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-serif text-sm font-medium text-zinc-100">Myristica Fragrans</h4>
+<p class="text-[9px] font-mono text-zinc-400">HS 0908.11</p>
+</div>
+</div>
+<p class="text-[10px] text-zinc-400 leading-snug">Volcanic groves of Banda. Intense natural myristicin and elemicin profile with sound-sorting acoustic test confirmation.</p>
+<div class="grid grid-cols-2 gap-1 text-[9px] font-mono bg-oled p-1.5 rounded border border-white/5">
+<div>
+<span class="text-zinc-500 block">VOLATILE OIL</span>
+<span class="text-zinc-200 font-semibold">Min 8.0% - 10%</span>
+</div>
+<div>
+<span class="text-zinc-500 block">AFLATOXIN B1</span>
+<span class="text-botanical-400 font-semibold">&lt; 2 ppb EU</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-3 pt-0 flex items-center justify-between border-t border-white/5 mt-2">
+<div>
+<span class="text-[8px] font-mono text-zinc-500 block">INDICATIVE FOB</span>
+<span class="text-xs font-mono font-bold text-zinc-100">$11,300 <span class="text-[9px] font-normal text-zinc-400">/ MT</span></span>
+</div>
+<button class="px-2.5 py-1.5 bg-botanical-500 text-oled font-mono font-bold text-[10px] rounded active:bg-botanical-400" onclick="goToSlide(5)">
+            Sample 250g
+          </button>
+</div>
+</article>
+</div>
+<!-- Direct-to-Farmer & ESG Callout -->
+<div class="space-y-2.5 pt-2">
+<div>
+<span class="text-[9px] font-mono text-amberGold-400 uppercase">FAIR RETURNS FOR TERROIR GUARDIANS</span>
+<h4 class="text-sm font-serif text-zinc-100">Direct-to-Farmer Trade. Zero Deforestation Enforced.</h4>
+<p class="text-[10px] text-zinc-400">22% to 35% higher farmgate revenues straight to our 4,200+ partner cultivators.</p>
+</div>
+<!-- Farmer Story Visual Card -->
+<div class="relative rounded-xl overflow-hidden border border-white/10 bg-surface-card">
+<img alt="Ibu Nurhasanah, Moluccan Clove Harvester" class="w-full h-36 object-cover object-top" src="https://lh3.googleusercontent.com/aida/AEtjO1UglcJYXx6Bh-cEr8BUAfDJai5IGoMQSC98XGFd7JeUerS2xVjOGyukoiNv7htZeTGYs2GlQ3d22NoTaPDw_9bzAsbQgqdVdCj_nIF-1myWk_VR_mCzaY8aDJV7SKmIXOyBd1PLDW5aMxM8GrFfTP-KK78lue-xYy6dj0vhGFIAG02JJsNLND79gJ5jrP286v6Ai8Qw4JS9_NMwPW4S23rgtEXrNxT7S-UXotc0Ud72ayMRSA6meJ9OkEM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-oled via-oled/30 to-transparent"></div>
+<div class="absolute bottom-2 left-2.5 right-2.5 flex items-end justify-between">
+<div>
+<span class="text-[8px] font-mono text-botanical-400 block">COMMUNITY BENEFICIARY #0412</span>
+<h5 class="text-xs font-bold text-zinc-100">Ibu Nurhasanah • Moluccan Clove Harvester</h5>
+</div>
+<div class="w-5 h-5 rounded-full bg-botanical-500/20 border border-botanical-500 flex items-center justify-center text-botanical-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+</div>
+<!-- ESG Metric Callouts -->
+<div class="grid grid-cols-2 gap-2 text-center">
+<div class="p-2 bg-surface-card rounded-lg border border-surface-border">
+<span class="text-base font-mono font-bold text-amberGold-400">$1.24M USD</span>
+<p class="text-[8.5px] text-zinc-400 font-mono mt-0.5">Farmgate premium distributed</p>
+</div>
+<div class="p-2 bg-surface-card rounded-lg border border-surface-border">
+<span class="text-base font-mono font-bold text-botanical-400">18,500 Ha</span>
+<p class="text-[8.5px] text-zinc-400 font-mono mt-0.5">GPS Protected Agroforestry</p>
+</div>
+</div>
+</div>
+<!-- Slide Bottom Navigation -->
+<div class="pt-2 border-t border-white/10 flex items-center justify-between font-mono text-[10px]">
+<button class="px-2.5 py-1 bg-surface-card border border-white/10 rounded text-zinc-400" onclick="prevSlide()">
+    ← Prev
+  </button>
+<span class="text-zinc-500">4 of 6</span>
+<button class="px-3 py-1 bg-botanical-500/20 text-botanical-400 border border-botanical-500/40 rounded flex items-center space-x-1 font-semibold" onclick="nextSlide()">
+<span>Next: Visual Terroir</span>
+<span>→</span>
+</button>
+</div>
+</section>
+</div>
+<!-- ================= SLIDE 5: VISUAL TERROIR ARCHIVE ================= -->
+<div class="slide-panel hidden" data-panel-index="4" id="slide-4">
+<section class="p-3.5 space-y-3" data-purpose="terroir-facility-gallery" id="gallery">
+<div>
+<div class="flex items-center justify-between">
+<span class="text-[9px] font-mono text-amberGold-400 uppercase tracking-wider flex items-center space-x-1">
+<span class="w-1.5 h-1.5 rounded-full bg-amberGold-400 animate-pulse mr-1"></span>
+        PROVENANCE &amp; INFRASTRUCTURE ARCHIVE
+      </span>
+<span class="text-[8.5px] font-mono text-zinc-500">HIGH-RES PHOTO RECORD</span>
+</div>
+<h3 class="text-lg font-serif text-zinc-100 mt-0.5">Visual Terroir &amp; Processing Mastery</h3>
+<p class="text-[11px] text-zinc-400 leading-relaxed mt-1">Eksplorasi visual langsung dari perkebunan lereng vulkanik kepulauan rempah Indonesia hingga fasilitas laboratorium uji spektroskopi berstandar internasional.</p>
+</div>
+<div class="flex space-x-1.5 overflow-x-auto no-scrollbar py-0.5 text-[9px] font-mono">
+<button class="px-2.5 py-1 rounded-full bg-botanical-500/20 text-botanical-400 border border-botanical-500/40 font-semibold shrink-0">All (4)</button>
+<button class="px-2.5 py-1 rounded-full bg-surface-card text-zinc-400 border border-white/10 hover:text-zinc-200 shrink-0">Harvest &amp; Terroir</button>
+<button class="px-2.5 py-1 rounded-full bg-surface-card text-zinc-400 border border-white/10 hover:text-zinc-200 shrink-0">Processing &amp; QC</button>
+<button class="px-2.5 py-1 rounded-full bg-surface-card text-zinc-400 border border-white/10 hover:text-zinc-200 shrink-0">Logistics</button>
+</div>
+<!-- Gallery Items Grid -->
+<div class="space-y-3">
+<!-- Card 1 -->
+<div class="group relative rounded-xl overflow-hidden border border-botanical-500/30 bg-surface-card shadow-sm cursor-pointer gallery-card" data-idx="0" onclick="openLightbox(0)">
+<div class="relative h-44 overflow-hidden">
+<img alt="Banda Neira Nutmeg &amp; Vibrant Mace Sun-Drying" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmYgbIxkXMUKmS6Y3sNKfWveWIwo16tQi4GiwHtxfPhnEfnCG45decERkFSnJcXY9QbkXSise95MeVUwjyoTv4GF5DvGoLztO3imZdnrokbZnMlXwX0IIsjRxrSxefxR7UxNJd-LQR0i69qvlKHSpOeCqbiJXFvwBvi0xYt7dp2yx494UZ2IihdHn4Ezn_5K9wfQh4h7-K1HGt7FjROKr3LajJp5SrVHaRlEkzyewcbZ1urcpfsF94"/>
+<div class="absolute inset-0 bg-gradient-to-t from-oled via-oled/30 to-transparent"></div>
+<div class="absolute top-2 left-2 flex items-center space-x-1 bg-oled/90 backdrop-blur-md px-2 py-0.5 rounded text-[8.5px] font-mono text-amberGold-400 border border-amberGold-500/30">
+<svg class="w-3 h-3 text-amberGold-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Banda Neira, Maluku</span>
+</div>
+<div class="absolute top-2 right-2 flex items-center space-x-1">
+<span class="bg-botanical-950/90 text-botanical-400 font-mono text-[8px] px-1.5 py-0.5 rounded border border-botanical-500/40">Volcanic Terroir #01</span>
+<span class="w-6 h-6 rounded-full bg-oled/90 border border-white/20 flex items-center justify-center text-botanical-400">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+</div>
+<div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
+<div>
+<span class="text-[8.5px] font-mono text-botanical-400 block">BAMBOO SOLAR CURING</span>
+<h4 class="text-xs font-semibold text-zinc-100">Crimson Mace &amp; Raw Nutmeg Harvest</h4>
+</div>
+<span class="px-2 py-0.5 rounded bg-oled/90 text-zinc-300 font-mono text-[8.5px] border border-white/10 shrink-0">ASTA Clean</span>
+</div>
+</div>
+<div class="p-2.5 bg-[#070c09] flex items-center justify-between font-mono text-[9px] border-t border-white/5 text-zinc-400">
+<span>Elevation: 420m MSL • Gunung Api</span>
+<span class="text-amberGold-400 flex items-center gap-1"><span>Aflatoxin Negligible</span><span class="text-botanical-400 text-[10px]">↗</span></span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative rounded-xl overflow-hidden border border-white/10 bg-surface-card shadow-sm cursor-pointer gallery-card" data-idx="1" onclick="openLightbox(1)">
+<div class="relative h-44 overflow-hidden">
+<img alt="Sun-Dried Moluccan Whole Cloves" class="w-full h-full object-cover transition duration-300 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWwU1mtjaSQx-8ML3MaZ4vIPQtzhs0oP8c1nLH6CqxpuWYx6FGVNvZ_MwRj4m1G8jDh0hJDOcgyFs8kol6sK0gJLYd9nJkYgU_pTnkgFDDsq3ZLxd_-WgJW6M-fcR73v_BizZReNtjWg_XW_z2Ju62w3DVmA2pA1STA1j9-n4CXSkzZQqQtnUYJEbEYnisdL6vryN-YFRHVxe9CV9aC2ksRMXbaXBhqap8TusGrOwXsCuTp32vf8Ko"/>
+<div class="absolute inset-0 bg-gradient-to-t from-oled via-oled/30 to-transparent"></div>
+<div class="absolute top-2 left-2 flex items-center space-x-1 bg-oled/90 backdrop-blur-md px-2 py-0.5 rounded text-[8.5px] font-mono text-zinc-200 border border-white/15">
+<span>Ambon &amp; Saparua, Maluku</span>
+</div>
+<div class="absolute top-2 right-2 flex items-center space-x-1">
+<span class="bg-amberGold-950/90 text-amberGold-400 font-mono text-[8px] px-1.5 py-0.5 rounded border border-amberGold-500/40">Hand-Sorted AA</span>
+</div>
+<div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
+<div>
+<span class="text-[8.5px] font-mono text-amberGold-400 block">CALYX INTEGRITY INSPECTION</span>
+<h4 class="text-xs font-semibold text-zinc-100">Syzygium Aromaticum Whole Buds</h4>
+</div>
+<span class="px-2 py-0.5 rounded bg-oled/90 text-botanical-400 font-mono text-[8.5px] border border-botanical-500/30 shrink-0">Eugenol &gt; 80%</span>
+</div>
+</div>
+<div class="p-2.5 bg-[#070c09] flex items-center justify-between font-mono text-[9px] border-t border-white/5 text-zinc-400">
+<span>Moisture: 10.8% • Dark Teak Sort</span>
+<span class="text-botanical-400 flex items-center gap-1"><span>Inspect Assay</span><span class="text-botanical-400 text-[10px]">↗</span></span>
+</div>
+</div>
+<!-- Mini Grid 2 Cards -->
+<div class="grid grid-cols-2 gap-2">
+<div class="group relative rounded-xl overflow-hidden border border-white/10 bg-surface-card flex flex-col justify-between shadow-sm cursor-pointer gallery-card" data-idx="2" onclick="openLightbox(2)">
+<div class="relative h-32 overflow-hidden">
+<img alt="Mount Kerinci AA Cassia Cinnamon Export Logistics" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbiQBk3Gy_obvYMO8EzDUFARN-JYKOjbR5XdmRki3G6SW73MvdDvIIzLpygEDtTjQq-UX2sbxCcJicsn0hpAp0hNc_cf0fa_snMEhv-7cBg5xw3JbisJ-_gtcmEFdHgzs1_NPLhiWHdTqkTnQzknEGp0s6BJfn6sMYyLRVG3KPZNZlb3l-ujvI5YuOVU8fNxl6qpECK9T4p2oyfSuKuwhasluFLmv5dYchcmZ9FE1i7dGYnIDwdmyu"/>
+<div class="absolute inset-0 bg-gradient-to-t from-oled via-oled/20 to-transparent"></div>
+<div class="absolute bottom-1.5 left-1.5 right-1.5">
+<h5 class="text-[11px] font-semibold text-zinc-100 leading-tight truncate">Cassia AA Quills</h5>
+</div>
+</div>
+<div class="p-1.5 bg-[#070c09] border-t border-white/5 font-mono text-[8px] text-zinc-400 flex items-center justify-between">
+<span>Kerinci, Sumatra</span>
+<span class="text-botanical-400 font-semibold">Maersk Seal</span>
+</div>
+</div>
+<div class="group relative rounded-xl overflow-hidden border border-white/10 bg-surface-card flex flex-col justify-between shadow-sm cursor-pointer gallery-card" data-idx="3" onclick="openLightbox(3)">
+<div class="relative h-32 overflow-hidden">
+<img alt="Advanced Spectroscopy Lab &amp; Agro-Science QC Inspection" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGhEhPMpVldhj6C88V9j05WSId9-p46raDgfgqA9dM68MVKWaBKBYqyK0b3qGnVU0KkXe4hcTp-UHXzoG3U2rBWylXy0d2liws2udTpt6npJH1mfsjtPlOXxYnK7d9agER8cRlNo63SF9YYlaBI14plSTkO4HDSJ2jxZZhyOX2PyU0-7HqIKWaJ2zvViuUMqTcscfXwGQgID6He9vNvOpNLtBgkTtemc4Yvmu6r3WO78JyWNBhvRLE"/>
+<div class="absolute inset-0 bg-gradient-to-t from-oled via-oled/20 to-transparent"></div>
+<div class="absolute bottom-1.5 left-1.5 right-1.5">
+<h5 class="text-[11px] font-semibold text-zinc-100 leading-tight truncate">Lab Volatile QC</h5>
+</div>
+</div>
+<div class="p-1.5 bg-[#070c09] border-t border-white/5 font-mono text-[8px] text-zinc-400 flex items-center justify-between">
+<span>Surabaya Lab</span>
+<span class="text-botanical-400 font-semibold">ISO 17025</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Slide Bottom Navigation -->
+<div class="pt-2 border-t border-white/10 flex items-center justify-between font-mono text-[10px]">
+<button class="px-2.5 py-1 bg-surface-card border border-white/10 rounded text-zinc-400" onclick="prevSlide()">
+    ← Prev
+  </button>
+<span class="text-zinc-500">5 of 6</span>
+<button class="px-3 py-1 bg-botanical-500/20 text-botanical-400 border border-botanical-500/40 rounded flex items-center space-x-1 font-semibold" onclick="nextSlide()">
+<span>Next: Specimen Dispatch</span>
+<span>→</span>
+</button>
+</div>
+</section>
+</div>
+<!-- ================= SLIDE 6: COMPLIANCE, SAMPLE KIT & FOOTER ================= -->
+<div class="slide-panel hidden" data-panel-index="5" id="slide-5">
+<!-- Compliance Section -->
+<section class="p-3.5 space-y-3" data-purpose="compliance-credentials">
+<div class="text-center">
+<span class="text-[9px] font-mono text-botanical-400 uppercase">GLOBAL FOOD SAFETY CREDENTIALS</span>
+<h3 class="text-lg font-serif text-zinc-100">Institutional Compliance Dossier</h3>
+<p class="text-[10px] text-zinc-400">Validated for direct customs entry into EU, USA (FDA Registered), GCC, and Japan (MHLW).</p>
+</div>
+<!-- 2x2 Cert Grid -->
+<div class="grid grid-cols-2 gap-2 text-[10px] font-mono">
+<div class="p-2.5 bg-surface-card rounded-lg border border-surface-border flex flex-col justify-between">
+<div class="flex items-center space-x-1.5 text-botanical-400 mb-1">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+<span class="font-bold text-zinc-200">ISO 22000:2018</span>
+</div>
+<p class="text-[8.5px] text-zinc-400 leading-tight">Food Safety Management System for Processing</p>
+<a class="text-[8px] text-amberGold-400 mt-2 block hover:underline" href="#">Download Copy →</a>
+</div>
+<div class="p-2.5 bg-surface-card rounded-lg border border-surface-border flex flex-col justify-between">
+<div class="flex items-center space-x-1.5 text-botanical-400 mb-1">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+<span class="font-bold text-zinc-200">USDA &amp; EU Organic</span>
+</div>
+<p class="text-[8.5px] text-zinc-400 leading-tight">Certified by Control Union (CU-849103)</p>
+<a class="text-[8px] text-amberGold-400 mt-2 block hover:underline" href="#">Download Copy →</a>
+</div>
+<div class="p-2.5 bg-surface-card rounded-lg border border-surface-border flex flex-col justify-between">
+<div class="flex items-center space-x-1.5 text-botanical-400 mb-1">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+<span class="font-bold text-zinc-200">Phyto &amp; Fumigation</span>
+</div>
+<p class="text-[8.5px] text-zinc-400 leading-tight">IPPC Standard (Methyl Bromide &amp; Phosphine)</p>
+<a class="text-[8px] text-amberGold-400 mt-2 block hover:underline" href="#">Download Copy →</a>
+</div>
+<div class="p-2.5 bg-surface-card rounded-lg border border-surface-border flex flex-col justify-between">
+<div class="flex items-center space-x-1.5 text-botanical-400 mb-1">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+<span class="font-bold text-zinc-200">US FDA &amp; Halal</span>
+</div>
+<p class="text-[8.5px] text-zinc-400 leading-tight">US FDA Facility ID #19940286710 • BPJPH</p>
+<a class="text-[8px] text-amberGold-400 mt-2 block hover:underline" href="#">Download Copy →</a>
+</div>
+</div>
+</section>
+<!-- BEGIN: Express Sample Kit Request Form -->
+<section class="p-3.5 border-t border-surface-border space-y-3" data-purpose="sample-request-form">
+<div class="bg-surface-card p-3.5 rounded-xl border border-surface-border space-y-3">
+<div>
+<span class="text-[9px] font-mono text-amberGold-400 flex items-center space-x-1">
+<span>⚡ 72-HOUR EXPRESS COURIER DISPATCH</span>
+</span>
+<h3 class="text-base font-serif text-zinc-100">Order a Complimentary Curated Lab Sample Kit</h3>
+<p class="text-[10px] text-zinc-400 mt-0.5">Includes vacuum-sealed 250g specimens of your requested botanicals, signed Laboratory Certificate of Analysis (COA), spectrophotometer moisture analysis sheet, and Phytosanitary declaration via DHL Express.</p>
+</div>
+<!-- Compact Form -->
+<form class="space-y-2.5 font-mono text-[10px]">
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="block text-zinc-400 mb-0.5">BUYER NAME</label>
+<input class="w-full bg-oled border border-white/10 rounded p-2 text-zinc-200 text-xs focus:border-botanical-500 focus:ring-0" placeholder="Johnathan Müller" type="text"/>
+</div>
+<div>
+<label class="block text-zinc-400 mb-0.5">CORPORATE EMAIL</label>
+<input class="w-full bg-oled border border-white/10 rounded p-2 text-zinc-200 text-xs focus:border-botanical-500 focus:ring-0" placeholder="jm@flavorgroup.de" type="email"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="block text-zinc-400 mb-0.5">COMPANY &amp; COUNTRY</label>
+<input class="w-full bg-oled border border-white/10 rounded p-2 text-zinc-200 text-xs focus:border-botanical-500 focus:ring-0" placeholder="Hamburg Spice Importers, DE" type="text"/>
+</div>
+<div>
+<label class="block text-zinc-400 mb-0.5">TARGET BOTANICAL</label>
+<select class="w-full bg-oled border border-white/10 rounded p-2 text-zinc-200 text-xs focus:border-botanical-500 focus:ring-0">
+<option>Cassia Cinnamon AA Sticks</option>
+<option>Maluku FAQ Cloves</option>
+<option>Banda Nutmeg &amp; Mace</option>
+<option>Lampung Peppercorns</option>
+</select>
+</div>
+</div>
+<div>
+<label class="block text-zinc-400 mb-0.5">FACILITY COURIER ADDRESS</label>
+<textarea class="w-full bg-oled border border-white/10 rounded p-2 text-zinc-200 text-xs focus:border-botanical-500 focus:ring-0" placeholder="Full laboratory delivery address with postal code and consignee phone" rows="2"></textarea>
+</div>
+<div class="space-y-1 text-[9px] text-zinc-400 pt-1">
+<div class="flex items-center space-x-1.5">
+<span class="text-botanical-400">✓</span>
+<span>Zero sample tariff for validated institutional F&amp;B and flavor importers</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="text-botanical-400">✓</span>
+<span>Direct tracking airway bill provided within 4 business hours</span>
+</div>
+</div>
+<button class="w-full py-2.5 bg-botanical-500 text-oled font-mono font-bold text-xs rounded uppercase tracking-wider active:bg-botanical-400 flex items-center justify-center space-x-1" type="button">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Dispatch 72-Hour Specimen Kit</span>
+</button>
+</form>
+</div>
+</section>
+<!-- END: Express Sample Kit Request Form -->
+<!-- BEGIN: MainFooter -->
+<footer class="p-4 bg-[#020302] border-t border-surface-border text-zinc-400 space-y-4 font-mono text-[10px]" data-purpose="page-footer">
+<!-- Brand Identity & Seaport info -->
+<div class="space-y-2">
+<div class="flex items-center space-x-2">
+<img alt="Kartika Lestari Jaya" class="w-7 h-7 rounded-full object-cover border border-amberGold-500/30 p-0.5 bg-surface-elevated" src="https://lh3.googleusercontent.com/aida/AEtjO1X-3q0GF5kTrm_FH1pIlTzEg-wfJv6B_3wTMHLSSWGO377DpIfuSPCzN7c3sk0m7XJNIoNp8jkHuf_zjGu6JsfIIBV_Vg-oEY8fcNfYV_cew7UCTKcasue6UeEpEPY6iPBVe0ALIO4C87kZfAr1_pPJKRMlS91Zc6HwDKURv5yZ5tCTUKVj6V27jvw6PbXTeDp899H7GvAT1m8qdnOfMi5vpK3RhcpCr8t0eoGZDkc8WYyDzOnQ_sJgRaY"/>
+<span class="text-xs font-bold text-zinc-200 tracking-wider">PT KARTIKA LESTARI JAYA</span>
+</div>
+<p class="text-[9.5px] leading-relaxed text-zinc-500">Premier Indonesian agricultural trading conglomerate &amp; heritage spice export house since 1974. Delivering single-origin botanicals directly from partner smallholder cooperatives to processors in 38 nations.</p>
+<!-- Certification pills -->
+<div class="flex flex-wrap gap-1 pt-1 text-[8px]">
+<span class="px-1.5 py-0.5 bg-zinc-900 rounded border border-white/5">USDA Organic</span>
+<span class="px-1.5 py-0.5 bg-zinc-900 rounded border border-white/5">EU Bio</span>
+<span class="px-1.5 py-0.5 bg-zinc-900 rounded border border-white/5">ISO 22000</span>
+<span class="px-1.5 py-0.5 bg-zinc-900 rounded border border-white/5">HACCP</span>
+<span class="px-1.5 py-0.5 bg-zinc-900 rounded border border-white/5">BPJPH Halal</span>
+</div>
+</div>
+<!-- Quick Seaport & Desks list -->
+<div class="grid grid-cols-2 gap-3 pt-2 border-t border-white/5 text-[9px]">
+<div>
+<span class="text-zinc-300 font-bold block mb-1">LOADING SEAPORTS</span>
+<ul class="space-y-0.5 text-zinc-500">
+<li>ID SUB: Tanjung Perak, Surabaya</li>
+<li>ID JKT: Tanjung Priok, Jakarta</li>
+<li>ID BLW: Belawan Port, Medan</li>
+<li>ID BIT: Bitung Container Terminal</li>
+<li>ID TKG: Teluk Bayur, Padang</li>
+</ul>
+</div>
+<div>
+<span class="text-zinc-300 font-bold block mb-1">DIRECT TRADING DESKS</span>
+<ul class="space-y-0.5 text-zinc-500">
+<li>Rotterdam: Weena 505 (EU Desk)</li>
+<li>Dubai: DMCC Free Zone Tower</li>
+<li>Singapore: Marina Bay Financial</li>
+<li>Jakarta: Wisma BNI 46 Hub</li>
+<li>Surabaya: Tanjung Perak Wharf</li>
+</ul>
+</div>
+</div>
+<!-- Newsletter Ticker Compact -->
+<div class="p-2.5 bg-surface-card rounded border border-white/5 space-y-1.5">
+<span class="text-zinc-200 font-bold text-[9px] block">EXPORT BULLETIN &amp; HARVEST OUTLOOK</span>
+<p class="text-[8px] text-zinc-500">Receive bi-weekly FOB price indices and monsoon crop harvest forecasts.</p>
+<div class="flex">
+<input class="w-full bg-oled border border-white/10 rounded-l p-1.5 text-[9px] text-zinc-300 focus:ring-0 focus:border-botanical-500" placeholder="corporate.buyer@domain.com" type="email"/>
+<button class="bg-botanical-500 text-oled px-2.5 text-[9px] font-bold rounded-r">SUBSCRIBE</button>
+</div>
+</div>
+<!-- Copyright & Disclaimer -->
+<div class="pt-2 border-t border-white/5 text-[8px] text-zinc-600 space-y-1 text-center">
+<p>© 2025 PT Kartika Lestari Jaya Tbk. Export License No. 891/DAG-EXP/IDX. All rights reserved.</p>
+<p class="flex justify-center space-x-2 text-zinc-500">
+<span>Incoterms 2020 Rules</span>
+<span>•</span>
+<span>Phytosanitary Protocol</span>
+<span>•</span>
+<span>Privacy &amp; ESG Disclosures</span>
+</p>
+</div>
+</footer>
+<!-- Slide Bottom Navigation -->
+<div class="p-3 border-t border-white/10 bg-[#070c09] flex items-center justify-between font-mono text-[10px]">
+<button class="px-2.5 py-1 bg-surface-card border border-white/10 rounded text-zinc-400" onclick="prevSlide()">
+    ← Prev Slide
+  </button>
+<span class="text-zinc-500">6 of 6 • End of Deck</span>
+<button class="px-3 py-1 bg-amberGold-500/20 text-amberGold-400 border border-amberGold-500/40 rounded flex items-center space-x-1 font-semibold" onclick="goToSlide(0)">
+<span>Return to Start ↺</span>
+</button>
+</div>
+</div>
+</main>
+<!-- ================================================================= -->
+<!-- END: SLIDE DECKS CONTAINER -->
+<!-- ================================================================= -->
+<!-- BEGIN: High-Fidelity Photo Gallery Lightbox Modal -->
+<div aria-label="Terroir and Facility Image Viewer" aria-modal="true" class="fixed inset-0 z-50 flex items-center justify-center max-w-[390px] mx-auto hidden" id="gallery-lightbox" role="dialog">
+<!-- Backdrop -->
+<div class="fixed inset-0 bg-black/90 backdrop-blur-md transition-opacity duration-300 max-w-[390px] mx-auto" onclick="closeLightbox()"></div>
+<!-- Lightbox Container Surface -->
+<div class="relative w-full max-w-[370px] max-h-[92vh] mx-2.5 bg-[#070c09] border border-botanical-500/40 rounded-xl overflow-hidden flex flex-col justify-between shadow-2xl z-10">
+<!-- Modal Header Toolbar -->
+<div class="px-3 py-2 bg-[#020403] border-b border-white/10 flex items-center justify-between font-mono text-[9.5px]">
+<div class="flex items-center space-x-2">
+<span class="w-1.5 h-1.5 rounded-full bg-botanical-500 animate-pulse"></span>
+<span class="text-zinc-300 font-bold uppercase tracking-wider">SPECIMEN PROVENANCE</span>
+<span class="text-zinc-500" id="lightbox-counter">[1 / 4]</span>
+</div>
+<button aria-label="Close Lightbox" class="w-6 h-6 rounded-full bg-surface-card border border-white/15 flex items-center justify-center text-zinc-300 hover:text-zinc-100 hover:border-botanical-500 active:scale-95 transition" onclick="closeLightbox()">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+<!-- Main Image Display with Prev/Next overlays -->
+<div class="relative w-full h-56 bg-black flex items-center justify-center overflow-hidden">
+<img alt="High Resolution Specimen Record" class="w-full h-full object-cover transition-opacity duration-300" id="lightbox-img" src=""/>
+<!-- Nav Arrow: Previous -->
+<button aria-label="Previous Image" class="absolute left-2 w-8 h-8 rounded-full bg-black/75 backdrop-blur-sm border border-white/20 flex items-center justify-center text-zinc-200 hover:text-botanical-400 active:scale-90 transition z-10" onclick="navLightbox(-1)">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</button>
+<!-- Nav Arrow: Next -->
+<button aria-label="Next Image" class="absolute right-2 w-8 h-8 rounded-full bg-black/75 backdrop-blur-sm border border-white/20 flex items-center justify-center text-zinc-200 hover:text-botanical-400 active:scale-90 transition z-10" onclick="navLightbox(1)">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
+</button>
+<!-- Tag Badges Overlay -->
+<div class="absolute top-2 left-2 flex items-center gap-1.5">
+<span class="bg-oled/90 backdrop-blur-md px-2 py-0.5 rounded text-[8px] font-mono text-amberGold-400 border border-amberGold-500/30" id="lightbox-tag-left">Terroir #01</span>
+</div>
+<div class="absolute top-2 right-2">
+<span class="bg-botanical-950/90 text-botanical-400 font-mono text-[8px] px-2 py-0.5 rounded border border-botanical-500/40" id="lightbox-tag-right">Verified</span>
+</div>
+</div>
+<!-- Commodity Technical Specimen Metadata Card -->
+<div class="p-3 bg-[#050907] space-y-2.5 overflow-y-auto font-sans">
+<div>
+<span class="text-[8.5px] font-mono text-botanical-400 uppercase tracking-wide block" id="lightbox-category">BAMBOO SOLAR CURING</span>
+<h3 class="text-sm font-serif text-zinc-100 font-medium leading-snug" id="lightbox-title">Crimson Mace &amp; Raw Nutmeg Harvest</h3>
+<p class="text-[9.5px] font-mono text-zinc-400 mt-0.5 flex items-center gap-1" id="lightbox-geotag">
+<svg class="w-3 h-3 text-amberGold-400 shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Banda Neira, Maluku • 420m MSL Gunung Api</span>
+</p>
+</div>
+<!-- Key Technical Metric Chips -->
+<div class="grid grid-cols-2 gap-1.5 text-[9px] font-mono">
+<div class="p-1.5 rounded bg-surface-card border border-white/5">
+<span class="text-zinc-500 block text-[8px]">QUALITY ASSAY</span>
+<span class="text-botanical-400 font-semibold truncate block" id="lightbox-assay">ASTA Clean Verified</span>
+</div>
+<div class="p-1.5 rounded bg-surface-card border border-white/5">
+<span class="text-zinc-500 block text-[8px]">CRITICAL METRIC</span>
+<span class="text-amberGold-400 font-semibold truncate block" id="lightbox-metric">Aflatoxin Negligible &lt; 1ppb</span>
+</div>
+</div>
+<!-- Interactive Actions -->
+<div class="grid grid-cols-2 gap-2 pt-1 font-mono text-[10px]">
+<button class="w-full py-2 bg-gradient-to-r from-amberGold-500 to-amber-600 text-oled font-bold rounded text-center tracking-tight flex items-center justify-center space-x-1 shimmer-btn" onclick="closeLightbox(); goToSlide(2);">
+<svg class="w-3 h-3 relative z-10" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="relative z-10">Add to CIF Calc</span>
+</button>
+<button class="w-full py-2 bg-surface-card border border-botanical-500/40 text-botanical-400 font-semibold rounded text-center tracking-tight active:bg-surface-elevated flex items-center justify-center space-x-1 transition" onclick="closeLightbox(); goToSlide(5);" type="button">
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span>Request Sample</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- ================================================================= -->
+<!-- SCRIPTS: SLIDE DECK LOGIC & LIGHTBOX INTERACTIVITY -->
+<!-- ================================================================= -->
+<script id="slide-and-lightbox-logic">
+  const slideLabels = [
+    "SLIDE 1 • OVERVIEW & METRICS",
+    "SLIDE 2 • TRACEABILITY & AIS",
+    "SLIDE 3 • CIF COST SIMULATOR",
+    "SLIDE 4 • HARVEST CATALOG & ESG",
+    "SLIDE 5 • VISUAL TERROIR ARCHIVE",
+    "SLIDE 6 • SAMPLE KIT & CONTACT"
+  ];
+  let currentSlideIndex = 0;
+  const totalSlides = 6;
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides) return;
+    currentSlideIndex = index;
+    
+    // Hide all slides
+    for (let i = 0; i < totalSlides; i++) {
+      const panel = document.getElementById('slide-' + i);
+      if (panel) {
+        if (i === currentSlideIndex) {
+          panel.classList.remove('hidden');
+        } else {
+          panel.classList.add('hidden');
+        }
+      }
+    }
+
+    // Update Header Indicators
+    const labelEl = document.getElementById('active-slide-label');
+    if (labelEl) labelEl.innerText = slideLabels[currentSlideIndex];
+    
+    const numEl = document.getElementById('slide-num-indicator');
+    if (numEl) numEl.innerText = String(currentSlideIndex + 1).padStart(2, '0');
+
+    // Update Pill Tab Styling
+    const tabs = document.querySelectorAll('.slide-tab-btn');
+    tabs.forEach((tab, idx) => {
+      if (idx === currentSlideIndex) {
+        tab.className = 'slide-tab-btn px-2.5 py-1 rounded border shrink-0 flex items-center space-x-1 bg-botanical-500/20 text-botanical-400 border-botanical-500 font-semibold shadow-sm';
+        tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      } else {
+        tab.className = 'slide-tab-btn px-2.5 py-1 rounded border shrink-0 flex items-center space-x-1 bg-surface-card text-zinc-400 border-white/10 hover:text-zinc-200';
+      }
+    });
+
+    // Scroll back to top of viewport
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function nextSlide() {
+    if (currentSlideIndex < totalSlides - 1) {
+      goToSlide(currentSlideIndex + 1);
+    } else {
+      goToSlide(0);
+    }
+  }
+
+  function prevSlide() {
+    if (currentSlideIndex > 0) {
+      goToSlide(currentSlideIndex - 1);
+    } else {
+      goToSlide(totalSlides - 1);
+    }
+  }
+
+  // Lightbox data
+  const galleryItems = [
+    {
+      src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAmYgbIxkXMUKmS6Y3sNKfWveWIwo16tQi4GiwHtxfPhnEfnCG45decERkFSnJcXY9QbkXSise95MeVUwjyoTv4GF5DvGoLztO3imZdnrokbZnMlXwX0IIsjRxrSxefxR7UxNJd-LQR0i69qvlKHSpOeCqbiJXFvwBvi0xYt7dp2yx494UZ2IihdHn4Ezn_5K9wfQh4h7-K1HGt7FjROKr3LajJp5SrVHaRlEkzyewcbZ1urcpfsF94',
+      category: 'BAMBOO SOLAR CURING',
+      title: 'Crimson Mace & Raw Nutmeg Harvest',
+      geotag: 'Banda Neira, Maluku • Elevation: 420m MSL (Gunung Api)',
+      tagLeft: 'Terroir #01 • Banda',
+      tagRight: 'ASTA Clean',
+      assay: 'ASTA Clean Verified',
+      metric: 'Aflatoxin Negligible < 1 ppb'
+    },
+    {
+      src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAWwU1mtjaSQx-8ML3MaZ4vIPQtzhs0oP8c1nLH6CqxpuWYx6FGVNvZ_MwRj4m1G8jDh0hJDOcgyFs8kol6sK0gJLYd9nJkYgU_pTnkgFDDsq3ZLxd_-WgJW6M-fcR73v_BizZReNtjWg_XW_z2Ju62w3DVmA2pA1STA1j9-n4CXSkzZQqQtnUYJEbEYnisdL6vryN-YFRHVxe9CV9aC2ksRMXbaXBhqap8TusGrOwXsCuTp32vf8Ko',
+      category: 'CALYX INTEGRITY INSPECTION',
+      title: 'Syzygium Aromaticum Whole Buds',
+      geotag: 'Ambon & Saparua, Maluku • Dark Teak Table Sort',
+      tagLeft: 'Hand-Sorted Grade AA',
+      tagRight: 'Eugenol > 80%',
+      assay: 'Eugenol Standard > 80%',
+      metric: 'Moisture: 10.8% calibrated'
+    },
+    {
+      src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBbiQBk3Gy_obvYMO8EzDUFARN-JYKOjbR5XdmRki3G6SW73MvdDvIIzLpygEDtTjQq-UX2sbxCcJicsn0hpAp0hNc_cf0fa_snMEhv-7cBg5xw3JbisJ-_gtcmEFdHgzs1_NPLhiWHdTqkTnQzknEGp0s6BJfn6sMYyLRVG3KPZNZlb3l-ujvI5YuOVU8fNxl6qpECK9T4p2oyfSuKuwhasluFLmv5dYchcmZ9FE1i7dGYnIDwdmyu',
+      category: 'CONTAINER EXPORT PACKING',
+      title: 'Cassia Cinnamon AA Quills Staged',
+      geotag: 'Mount Kerinci, Jambi Sumatra • 1,400m Highland',
+      tagLeft: 'Kerinci Highlands',
+      tagRight: 'FCL Staged',
+      assay: 'Maersk Food-Grade Seal',
+      metric: 'Moisture < 12% Dehumidified'
+    },
+    {
+      src: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDGhEhPMpVldhj6C88V9j05WSId9-p46raDgfgqA9dM68MVKWaBKBYqyK0b3qGnVU0KkXe4hcTp-UHXzoG3U2rBWylXy0d2liws2udTpt6npJH1mfsjtPlOXxYnK7d9agER8cRlNo63SF9YYlaBI14plSTkO4HDSJ2jxZZhyOX2PyU0-7HqIKWaJ2zvViuUMqTcscfXwGQgID6He9vNvOpNLtBgkTtemc4Yvmu6r3WO78JyWNBhvRLE',
+      category: 'SPECTROSCOPY & VOLATILE OIL ASSAY',
+      title: 'Surabaya Central Agro-Science QC Lab',
+      geotag: 'IDSUB Maritime Logistics Park • ISO 17025',
+      tagLeft: 'Surabaya Testing Hub',
+      tagRight: 'ISO 17025',
+      assay: 'GC-MS Spectrometry Clean',
+      metric: 'Pesticide & Foreign: 0.00%'
+    }
+  ];
+
+  let currentLightboxIdx = 0;
+
+  function openLightbox(index) {
+    currentLightboxIdx = index;
+    updateLightboxContent();
+    const modal = document.getElementById('gallery-lightbox');
+    if (modal) {
+      modal.classList.remove('hidden');
+    }
+  }
+
+  function closeLightbox() {
+    const modal = document.getElementById('gallery-lightbox');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+  }
+
+  function navLightbox(direction) {
+    currentLightboxIdx = (currentLightboxIdx + direction + galleryItems.length) % galleryItems.length;
+    updateLightboxContent();
+  }
+
+  function updateLightboxContent() {
+    const item = galleryItems[currentLightboxIdx];
+    if (!item) return;
+    const img = document.getElementById('lightbox-img');
+    if (img) img.src = item.src;
+    const counter = document.getElementById('lightbox-counter');
+    if (counter) counter.innerText = '[' + (currentLightboxIdx + 1) + ' / ' + galleryItems.length + ']';
+    const cat = document.getElementById('lightbox-category');
+    if (cat) cat.innerText = item.category;
+    const title = document.getElementById('lightbox-title');
+    if (title) title.innerText = item.title;
+    const geo = document.querySelector('#lightbox-geotag span');
+    if (geo) geo.innerText = item.geotag;
+    const tagL = document.getElementById('lightbox-tag-left');
+    if (tagL) tagL.innerText = item.tagLeft;
+    const tagR = document.getElementById('lightbox-tag-right');
+    if (tagR) tagR.innerText = item.tagRight;
+    const assay = document.getElementById('lightbox-assay');
+    if (assay) assay.innerText = item.assay;
+    const metric = document.getElementById('lightbox-metric');
+    if (metric) metric.innerText = item.metric;
+  }
+
+  document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('gallery-lightbox');
+    if (modal && !modal.classList.contains('hidden')) {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowRight') navLightbox(1);
+      if (e.key === 'ArrowLeft') navLightbox(-1);
+    }
+  });
+
+  // Handle touch swipe for mobile decks
+  let touchStartX = 0;
+  let touchEndX = 0;
+  const masterContainer = document.getElementById('slides-master-container');
+  if (masterContainer) {
+    masterContainer.addEventListener('touchstart', function(e) {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    masterContainer.addEventListener('touchend', function(e) {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipeGesture();
+    }, { passive: true });
+  }
+
+  function handleSwipeGesture() {
+    const diff = touchEndX - touchStartX;
+    if (Math.abs(diff) > 55) {
+      if (diff < 0) {
+        nextSlide();
+      } else {
+        prevSlide();
+      }
+    }
+  }
+</script>
+</body></html>
